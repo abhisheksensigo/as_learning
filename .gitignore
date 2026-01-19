@@ -1,0 +1,25 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# macOS system files
+.DS_Store
+
+# Virtual environments (Poetry/Venv/Conda)
+.venv/
+env/
+venv/
+ENV/
+
+# Secrets and local config
+.env
+.env.local
+
+# Databases (SQLite)
+*.db
+*.sqlite3
+
+# Poetry specific (optional, but good to have)
+.python-version
