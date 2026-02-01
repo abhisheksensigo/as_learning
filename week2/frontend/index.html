@@ -24,20 +24,36 @@
     <div class="row">
       <label class="row"><input id="save_note" type="checkbox" checked /> Save as note</label>
       <button id="extract">Extract</button>
+      <button id="extract_llm">Extract LLM</button>
+      <button id="list_notes">List Notes</button>
     </div>
 
     <div class="items" id="items"></div>
+    <div class="items" id="notes"></div>
 
     <script>
       const $ = (sel) => document.querySelector(sel);
       const itemsEl = $('#items');
       const btn = $('#extract');
-      btn.addEventListener('click', async () => {
+      const btnLlm = $('#extract_llm');
+      const btnNotes = $('#list_notes');
+      const notesEl = $('#notes');
+      let notes = [];
+
+      const escapeHtml = (s) =>
+        String(s)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+
+      async function runExtract(endpoint) {
         const text = $('#text').value;
         const save = $('#save_note').checked;
         itemsEl.textContent = 'Extracting...';
         try {
-          const res = await fetch('/action-items/extract', {
+          const res = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text, save_note: save }),
@@ -65,7 +81,32 @@
           console.error(err);
           itemsEl.textContent = 'Error extracting items';
         }
-      });
+      }
+
+      btn.addEventListener('click', () => runExtract('/action-items/extract'));
+      btnLlm.addEventListener('click', () => runExtract('/action-items/extract_llm'));
+
+      async function listNotes() {
+        notesEl.textContent = 'Loading notes...';
+        try {
+          const res = await fetch('/notes');
+          if (!res.ok) throw new Error('Request failed');
+          const data = await res.json();
+          notes = Array.isArray(data) ? data : [];
+          if (notes.length === 0) {
+            notesEl.innerHTML = '<p class="muted">No notes found.</p>';
+            return;
+          }
+          notesEl.innerHTML = notes
+            .map((n) => `<div>#${n.id} - ${escapeHtml(n.content)}</div>`)
+            .join('');
+        } catch (err) {
+          console.error(err);
+          notesEl.textContent = 'Error loading notes';
+        }
+      }
+
+      btnNotes.addEventListener('click', listNotes);
 
     </script>
   </body>

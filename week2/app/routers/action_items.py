@@ -1,29 +1,64 @@
 from __future__ import annotations
-
 from typing import Any, Dict, List, Optional
-
 from fastapi import APIRouter, HTTPException
-
 from .. import db
-from ..services.extract import extract_action_items
+from ..services.extract import extract_action_items, extract_action_items_llm
+
+try:
+    from ..schemas import ExtractRequest, ExtractResponse
+except ImportError:  # pragma: no cover
+    # Temporary local fallback so this router can work before schemas are added.
+    # (Per instructions, we are not modifying other files in this step.)
+    from pydantic import BaseModel
+
+    class ExtractRequest(BaseModel):
+        text: str = ""
+        save_note: bool = False
+
+    class ExtractResponse(BaseModel):
+        note_id: Optional[int]
+        items: List[Dict[str, Any]]
+
+
 
 
 router = APIRouter(prefix="/action-items", tags=["action-items"])
 
 
-@router.post("/extract")
-def extract(payload: Dict[str, Any]) -> Dict[str, Any]:
-    text = str(payload.get("text", "")).strip()
+@router.post("/extract", response_model=ExtractResponse)
+def extract(payload: ExtractRequest) -> ExtractResponse:
+    text = str(getattr(payload, "text", "")).strip()
     if not text:
         raise HTTPException(status_code=400, detail="text is required")
 
     note_id: Optional[int] = None
-    if payload.get("save_note"):
+    if bool(getattr(payload, "save_note", False)):
         note_id = db.insert_note(text)
 
     items = extract_action_items(text)
     ids = db.insert_action_items(items, note_id=note_id)
-    return {"note_id": note_id, "items": [{"id": i, "text": t} for i, t in zip(ids, items)]}
+    return ExtractResponse(
+        note_id=note_id,
+        items=[{"id": i, "text": t} for i, t in zip(ids, items)],
+    )
+
+
+@router.post("/extract_llm", response_model=ExtractResponse)
+def extract_llm(payload: ExtractRequest) -> ExtractResponse:
+    text = str(getattr(payload, "text", "")).strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="text is required")
+
+    note_id: Optional[int] = None
+    if bool(getattr(payload, "save_note", False)):
+        note_id = db.insert_note(text)
+
+    items = extract_action_items_llm(text)
+    ids = db.insert_action_items(items, note_id=note_id)
+    return ExtractResponse(
+        note_id=note_id,
+        items=[{"id": i, "text": t} for i, t in zip(ids, items)],
+    )
 
 
 @router.get("")
