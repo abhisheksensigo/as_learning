@@ -22,7 +22,11 @@ For each exercise, please include what prompts you used to generate the answer, 
 ### Exercise 1: Scaffold a New Feature
 Prompt: 
 ```
-TODO
+ have to implement a function that implements a function called extract_action_items_llm(). This has to mimic exactly extact_action_items() in functionality.
+
+However, this MUST use ollama 
+
+Can you first create a scaffolding of this function 
 ``` 
 
 Generated Code Snippets:

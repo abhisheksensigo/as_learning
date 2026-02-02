@@ -1,9 +1,6 @@
 from __future__ import annotations
-
 from typing import Any, Dict, List
-
 from fastapi import APIRouter, HTTPException
-
 from .. import db
 from ..schemas import NoteCreate, NoteOut
 

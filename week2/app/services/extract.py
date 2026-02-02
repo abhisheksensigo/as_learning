@@ -87,7 +87,8 @@ def extract_action_items_llm(text: str) -> List[str]:
         "You extract action items (TODOs) from text.\n"
         "Return ONLY valid JSON: an array of strings.\n"
         "Each string should be a short action item; no numbering;\n"
-        " no extra keys. Ensure that the strings are in the same format as the input text and strings match. \n"
+        " no extra keys.\n"
+        "Ensure that the strings are in the same format as the input text and strings match. \n"
         "Don't summarize the strings."
     )
 
