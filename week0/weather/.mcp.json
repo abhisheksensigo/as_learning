@@ -1,0 +1,7 @@
+{
+  "weather": {
+    "command": "uv",
+    "args": ["run", "weather.py"],
+    "env": {}
+  }
+}
