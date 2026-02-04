@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "argentina-research": {
+      "command": "uv",
+      "args": ["run", "python", "main.py"]
+    }
+  }
+}
