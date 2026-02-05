@@ -1,12 +1,4 @@
-from mcp.server.fastmcp import FastMCP
-
-mcp = FastMCP("argentina-research")
-
-
-@mcp.tool()
-def hello() -> str:
-    """Say hello. Use this to verify the server is connected."""
-    return "Hello from Havier Millei!"
+from scholar import mcp
 
 
 def main():

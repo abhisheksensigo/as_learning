@@ -1,11 +1,13 @@
 {
+  "permissions": {
+    "allow": [
+      "mcp__argentina-research__hello",
+      "mcp__argentina-research__search_news",
+      "mcp__argentina-research__search_research"
+    ]
+  },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "argentina-research"
-  ],
-  "permissions": {
-    "allow": [
-      "mcp__argentina-research__hello"
-    ]
-  }
+  ]
 }
