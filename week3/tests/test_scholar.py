@@ -3,20 +3,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from scholar import (
-    hello,
     _uninvert_abstract,
     _search_research_by_countries,
     _countries_to_search,
     search_research,
     search_news,
+    fred_data_lookup,
     UNSUPPORTED_MSG,
 )
-
-
-def test_hello():
-    """hello() returns the expected greeting."""
-    result = hello()
-    assert "Havier Millei" in result
 
 
 def test_uninvert_abstract_empty():
@@ -178,6 +172,35 @@ async def test_search_research_both_countries_makes_two_calls():
     searches = [params0.get("search", ""), params1.get("search", "")]
     assert "Argentina inflation" in searches
     assert "Ireland inflation" in searches
+
+
+@pytest.mark.asyncio
+async def test_fred_data_lookup_needs_input():
+    """fred_data_lookup returns message when neither search_text nor series_id provided."""
+    result = await fred_data_lookup()
+    assert "search_text" in result or "series_id" in result
+
+
+@pytest.mark.asyncio
+async def test_fred_data_lookup_search():
+    """fred_data_lookup with search_text returns series table."""
+    with patch("scholar.fred.search_series", new_callable=AsyncMock) as mock_search:
+        mock_search.return_value = [
+            {"id": "GDPC1", "title": "Real GDP", "frequency": "Quarterly", "units": "Bil.", "observation_start": "1947-01-01", "observation_end": "2024-01-01"}
+        ]
+        result = await fred_data_lookup(search_text="GDP")
+        assert "GDPC1" in result
+        assert "Real GDP" in result
+
+
+@pytest.mark.asyncio
+async def test_fred_data_lookup_observations():
+    """fred_data_lookup with series_id returns observations table."""
+    with patch("scholar.fred.get_observations", new_callable=AsyncMock) as mock_obs:
+        mock_obs.return_value = [{"date": "2024-01-01", "value": "28.5"}]
+        result = await fred_data_lookup(series_id="GDPC1")
+        assert "2024-01-01" in result
+        assert "28.5" in result
 
 
 @pytest.mark.asyncio

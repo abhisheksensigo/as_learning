@@ -1,6 +1,6 @@
 import httpx
 from mcp.server.fastmcp import FastMCP
-
+import fred
 import news
 import timeline
 
@@ -18,13 +18,6 @@ def _countries_to_search(country: str) -> list[str] | str:
     if c in SUPPORTED_COUNTRIES:
         return [c.title()]
     return UNSUPPORTED_MSG
-
-
-@mcp.tool()
-def hello() -> str:
-    """Say hello. Use this to verify the server is connected."""
-    return "Hello from Havier Millei!"
-
 
 def _format_results(results: list[dict]) -> str:
     """Format search results as a markdown table."""
@@ -59,6 +52,54 @@ async def search_research(topic: str, country: str = "", timeline_filter: str = 
         return countries
     results = await _search_research_by_countries(topic, countries, timeline_filter)
     return _format_results(results)
+
+
+@mcp.tool()
+async def fred_data_lookup(
+    search_text: str = "",
+    series_id: str = "",
+    observation_start: str = "",
+    observation_end: str = "",
+    limit: int = 50,
+) -> str:
+    """Look up FRED (Federal Reserve Economic Data) series and observations.
+
+    Use search_text to find series by keyword (e.g. GDP, inflation, Ireland).
+    Use series_id to fetch data for a known series (e.g. GNPCA, GDPC1).
+    Set FRED_API_KEY in the environment. Get a free key at https://fred.stlouisfed.org/docs/api/api_key.html
+
+    Args:
+        search_text: Keywords to search for matching series (e.g. GDP Ireland, inflation).
+        series_id: FRED series ID to fetch observations for (e.g. GDPC1, GNPCA).
+        observation_start: Start date YYYY-MM-DD (optional).
+        observation_end: End date YYYY-MM-DD (optional).
+        limit: Max results (default 50).
+    """
+    if not search_text and not series_id:
+        return "Provide either search_text (to find series) or series_id (to get data)."
+
+    if series_id:
+        obs = await fred.get_observations(
+            series_id, observation_start, observation_end, limit
+        )
+        if not obs:
+            return f"No observations found for series {series_id}. Check the ID or date range."
+        rows = ["| Date | Value |", "|------|-------|"]
+        for o in obs:
+            rows.append(f"| {o.get('date', '')} | {o.get('value', '')} |")
+        return "\n".join(rows)
+
+    series_list = await fred.search_series(search_text, limit)
+    if not series_list:
+        return f"No FRED series found for '{search_text}'."
+    rows = ["| ID | Title | Frequency | Units | Start | End |", "|----|-------|-----------|-------|-------|-----|"]
+    for s in series_list:
+        rows.append(
+            f"| {s.get('id', '')} | {s.get('title', '')[:50]} | "
+            f"{s.get('frequency', '')} | {s.get('units', '')[:15]} | "
+            f"{s.get('observation_start', '')} | {s.get('observation_end', '')} |"
+        )
+    return "\n".join(rows)
 
 
 @mcp.tool()

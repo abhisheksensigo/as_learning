@@ -1,8 +1,21 @@
 {
   "mcpServers": {
-    "argentina-research": {
+    "country_research_paper": {
       "command": "uv",
-      "args": ["run", "python", "main.py"]
+      "args": ["run", "--directory", "/Users/abhisheksinghal/course/week3", "python", "main_paper.py"],
+      "env": {}
+    },
+    "country_research_news": {
+      "command": "uv",
+      "args": ["run", "--directory", "/Users/abhisheksinghal/course/week3", "python", "main_news.py"],
+      "env": {}
+    },
+    "country_research_data": {
+      "command": "uv",
+      "args": ["run", "--directory", "/Users/abhisheksinghal/course/week3", "python", "main_data.py"],
+      "env": {
+        "FRED_API_KEY": "YOUR_FRED_API_KEY"
+      }
     }
   }
 }
